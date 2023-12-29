@@ -38,6 +38,27 @@ function autobind(target, methodName, descriptor) {
     };
     return adjDescriptor;
 }
+// ProjectList Class
+class ProjectList {
+    constructor(type) {
+        this.type = type;
+        this.templateElement = document.getElementById('project-list');
+        this.hostElement = document.getElementById("app");
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild;
+        this.element.id = `${type}-projects`;
+        this.attach();
+        this.renderContent();
+    }
+    renderContent() {
+        const listId = `${this.type}-project-list`;
+        this.element.querySelector('ul').id = listId;
+        this.element.querySelector('h2').textContent = this.type.toUpperCase() + " Projects";
+    }
+    attach() {
+        this.hostElement.insertAdjacentElement('beforeend', this.element);
+    }
+}
 // ProjectInput Class
 class ProjectInput {
     constructor() {
@@ -46,9 +67,9 @@ class ProjectInput {
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
         this.element.id = 'user-input';
-        this, this.titleInputEmlemnt = this.element.querySelector("#title");
-        this, this.descriptionInputElement = this.element.querySelector("#description");
-        this, this.peopleInputElement = this.element.querySelector("#people");
+        this.titleInputEmlemnt = this.element.querySelector("#title");
+        this.descriptionInputElement = this.element.querySelector("#description");
+        this.peopleInputElement = this.element.querySelector("#people");
         this.configure();
         this.attach();
     }
@@ -94,3 +115,5 @@ __decorate([
     autobind // using decorator in js to autobind this keyword to class instead of event bind method can also be used
 ], ProjectInput.prototype, "submitHandler", null);
 const projInput = new ProjectInput;
+const active = new ProjectList('active');
+const finished = new ProjectList('finished');
