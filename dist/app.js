@@ -5,6 +5,39 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+// Project State management
+class ProjectState {
+    // we are creating a singleton Class 
+    constructor() {
+        this.listeners = [];
+        this.projects = [];
+    }
+    // to create a instance of this class we create method which checks for the instance of the class if exsists returns that or create a new and returns that
+    // making the method static there cannont be more than one instacne of this method
+    static getInstance() {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new ProjectState();
+        return this.instance;
+    }
+    addListener(listenerFn) {
+        this.listeners.push(listenerFn);
+    }
+    addproject(title, description, numOfPeople) {
+        const newProject = {
+            id: Math.random().toString(),
+            title: title,
+            description: description,
+            people: numOfPeople
+        };
+        this.projects.push(newProject);
+        for (const listenerFn of this.listeners) {
+            listenerFn(this.projects.slice());
+        }
+    }
+}
+const projectState = ProjectState.getInstance(); //static method are called using the class name
 function validate(validatableInput) {
     let isValid = true;
     if (validatableInput.required) {
@@ -42,13 +75,26 @@ function autobind(target, methodName, descriptor) {
 class ProjectList {
     constructor(type) {
         this.type = type;
+        this.assignedPorjects = [];
         this.templateElement = document.getElementById('project-list');
         this.hostElement = document.getElementById("app");
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild;
         this.element.id = `${type}-projects`;
+        projectState.addListener((projects) => {
+            this.assignedPorjects = projects;
+            this.renderProjects();
+        });
         this.attach();
         this.renderContent();
+    }
+    renderProjects() {
+        const listEl = document.getElementById(`${this.type}-project-list`);
+        for (const prjItem of this.assignedPorjects) {
+            const listItem = document.createElement('li');
+            listItem.textContent = prjItem.title;
+            listEl.appendChild(listItem);
+        }
     }
     renderContent() {
         const listId = `${this.type}-project-list`;
@@ -100,6 +146,7 @@ class ProjectInput {
         const userInput = this.gatherUserInput();
         if (Array.isArray(userInput)) {
             const [title, description, people] = userInput;
+            projectState.addproject(title, description, people);
             console.log(title, description, people);
             this.clearInputs();
         }

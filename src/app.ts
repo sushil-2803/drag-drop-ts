@@ -1,3 +1,37 @@
+// Project State management
+class ProjectState{
+    private listeners:any[]=[]
+    private projects:any[]=[]
+    private static instance:ProjectState // by making this property static make sure that there is only one instace of this
+    // we are creating a singleton Class 
+    private constructor() {     // here by making constructor private the class cannot pe initialized outside the class definition
+    }
+    // to create a instance of this class we create method which checks for the instance of the class if exsists returns that or create a new and returns that
+    // making the method static there cannont be more than one instacne of this method
+    static getInstance(){
+        if(this.instance){
+            return this.instance
+        }
+        this.instance=new ProjectState()
+        return this.instance
+    }
+    addListener(listenerFn:Function){
+        this.listeners.push(listenerFn)
+    }
+    addproject (title:string,description:string,numOfPeople:number){
+        const newProject={
+            id:Math.random().toString(),
+            title:title,
+            description:description,
+            people:numOfPeople
+        }
+        this.projects.push(newProject)
+        for(const listenerFn of this.listeners){
+            listenerFn(this.projects.slice())
+        }
+    }
+}
+const projectState= ProjectState.getInstance() //static method are called using the class name
 //Validation
 interface Validatable {
     value: string | number,
@@ -50,14 +84,29 @@ class ProjectList{
     templateElement: HTMLTemplateElement;
     hostElement: HTMLDivElement
     element: HTMLElement
+    assignedPorjects:any[]
     constructor(private type:'active'|'finished'){
+        this.assignedPorjects=[]
         this.templateElement = document.getElementById('project-list')! as HTMLTemplateElement
         this.hostElement = document.getElementById("app")! as HTMLDivElement
         const importedNode = document.importNode(this.templateElement.content, true)
         this.element = importedNode.firstElementChild as HTMLElement
         this.element.id = `${type}-projects`
+        projectState.addListener((projects:any[])=>{
+            this.assignedPorjects=projects
+            this.renderProjects()
+        })
+        
         this.attach()
         this.renderContent()
+    }
+    private renderProjects(){
+        const listEl=document.getElementById(`${this.type}-project-list`)! as HTMLUListElement
+        for (const prjItem of this.assignedPorjects){
+            const listItem=document.createElement('li')
+            listItem.textContent=prjItem.title
+            listEl.appendChild(listItem)
+        }
     }
     private renderContent(){
         const listId=`${this.type}-project-list`
@@ -119,6 +168,7 @@ class ProjectInput {
         const userInput = this.gatherUserInput()
         if (Array.isArray(userInput)) {
             const [title, description, people] = userInput
+            projectState.addproject(title,description,people)
             console.log(title, description, people)
             this.clearInputs()
         }
