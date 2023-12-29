@@ -13,13 +13,19 @@ class Project {
     ) { }
 }
 // Project State management
-type Listener = (items: Project[]) => void;
-class ProjectState {
-    private listeners: Listener[] = [];
+type Listener <T>= (items: T[]) => void;
+class State<T>{
+    protected listeners: Listener<T>[] = [];
+    addListener(listenerFn: Listener<T>) {
+        this.listeners.push(listenerFn);
+    }
+}
+class ProjectState extends State<Project> {
     private projects: any[] = [];
     private static instance: ProjectState; // by making this property static make sure that there is only one instace of this
     // we are creating a singleton Class
     private constructor() {
+        super()
         // here by making constructor private the class cannot pe initialized outside the class definition
     }
     // to create a instance of this class we create method which checks for the instance of the class if exsists returns that or create a new and returns that
@@ -31,9 +37,7 @@ class ProjectState {
         this.instance = new ProjectState();
         return this.instance;
     }
-    addListener(listenerFn: Listener) {
-        this.listeners.push(listenerFn);
-    }
+    
     addproject(title: string, description: string, numOfPeople: number) {
         const newProject = new Project(Math.random().toString(), title, description, numOfPeople, ProjectStatus.Active)
         this.projects.push(newProject);

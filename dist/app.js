@@ -20,10 +20,18 @@ class Project {
         this.status = status;
     }
 }
-class ProjectState {
-    // we are creating a singleton Class
+class State {
     constructor() {
         this.listeners = [];
+    }
+    addListener(listenerFn) {
+        this.listeners.push(listenerFn);
+    }
+}
+class ProjectState extends State {
+    // we are creating a singleton Class
+    constructor() {
+        super();
         this.projects = [];
         // here by making constructor private the class cannot pe initialized outside the class definition
     }
@@ -35,9 +43,6 @@ class ProjectState {
         }
         this.instance = new ProjectState();
         return this.instance;
-    }
-    addListener(listenerFn) {
-        this.listeners.push(listenerFn);
     }
     addproject(title, description, numOfPeople) {
         const newProject = new Project(Math.random().toString(), title, description, numOfPeople, ProjectStatus.Active);
