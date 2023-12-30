@@ -47,6 +47,16 @@ class ProjectState extends State {
     addproject(title, description, numOfPeople) {
         const newProject = new Project(Math.random().toString(), title, description, numOfPeople, ProjectStatus.Active);
         this.projects.push(newProject);
+        this.updateListeners();
+    }
+    moveProject(projectId, newStatus) {
+        const project = this.projects.find(prj => prj.id === projectId);
+        if (project && project.status !== newStatus) {
+            project.status = newStatus;
+            this.updateListeners();
+        }
+    }
+    updateListeners() {
         for (const listenerFn of this.listeners) {
             listenerFn(this.projects.slice());
         }
@@ -127,7 +137,7 @@ class ProjectItem extends Component {
         event.dataTransfer.effectAllowed = 'move';
     }
     dragEndHandler(event) {
-        console.log('DragEnd');
+        // console.log('DragEnd')
     }
     configure() {
         this.element.addEventListener('dragstart', this.dragStartHandler);
@@ -162,6 +172,8 @@ class ProjectList extends Component {
         }
     }
     dropHandler(event) {
+        const projId = event.dataTransfer.getData('text/plain');
+        projectState.moveProject(projId, this.type === 'active' ? ProjectStatus.Active : ProjectStatus.Finished);
     }
     dragLeaveHandler(event) {
         const listEl = this.element.querySelector('ul');
